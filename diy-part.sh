@@ -5,4 +5,4 @@
 ./scripts/feeds install -a
 
 # 默认开启 WiFi
-sed -i "s/option disabled '1'/option disabled '0'/g" package/kernel/mac80211/files/lib/wifi/mac80211.sh
+sed -i "s/option disabled '1'/option disabled '0'/g" package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc
