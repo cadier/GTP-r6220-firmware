@@ -1,52 +1,46 @@
 #!/bin/bash
+# =========================================================
+# ImmortalWrt R6220 DIY Script（修正版）
+# 功能：
+# - 更新 feeds
+# - 安装软件包
+# - 默认开启 WiFi
+# - 默认中文
+# - 修复 luci SSL 冲突（OpenSSL → mbedTLS）
+# =========================================================
 
-# 更新 feeds
+# 更新并安装 feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 移除冲突 SSL
+# ===== 默认开启 WiFi =====
+sed -i "s/option disabled '1'/option disabled '0'/g" \
+package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc
+
+# ===== 默认中文语言 =====
+mkdir -p package/base-files/files/etc/uci-defaults
+
+cat > package/base-files/files/etc/uci-defaults/99-default-lang << 'EOF'
+#!/bin/sh
+uci set luci.main.lang='zh_cn'
+uci commit luci
+exit 0
+EOF
+
+chmod +x package/base-files/files/etc/uci-defaults/99-default-lang
+
+# ===== 修复 SSL 包冲突 =====
 sed -i '/CONFIG_PACKAGE_luci-ssl=/d' .config
-sed -i '/CONFIG_PACKAGE_libustream-openssl/d' .config
-sed -i '/CONFIG_PACKAGE_uhttpd-openssl/d' .config
+sed -i '/CONFIG_PACKAGE_luci-ssl-mbedtls=/d' .config
+sed -i '/CONFIG_PACKAGE_libustream-openssl20201210/d' .config
+sed -i '/CONFIG_PACKAGE_libustream-mbedtls20201210/d' .config
 
-# 启用 mbedtls
-echo "CONFIG_PACKAGE_luci-ssl-mbedtls=y" >> .config
-echo "CONFIG_PACKAGE_libustream-mbedtls20201210=y" >> .config
-echo "CONFIG_PACKAGE_uhttpd-mod-ubus=y" >> .config
+cat >> .config << EOF
+CONFIG_PACKAGE_luci-ssl-mbedtls=y
+# CONFIG_PACKAGE_luci-ssl is not set
+# CONFIG_PACKAGE_libustream-openssl20201210 is not set
+CONFIG_PACKAGE_libustream-mbedtls20201210=y
+EOF
 
-# 常用工具
-echo "CONFIG_PACKAGE_htop=y" >> .config
-echo "CONFIG_PACKAGE_nano=y" >> .config
-echo "CONFIG_PACKAGE_curl=y" >> .config
-echo "CONFIG_PACKAGE_wget-ssl=y" >> .config
-
-# SSH
-echo "CONFIG_PACKAGE_openssh-server=y" >> .config
-echo "CONFIG_PACKAGE_openssh-sftp-server=y" >> .config
-
-# TTYD
-echo "CONFIG_PACKAGE_ttyd=y" >> .config
-echo "CONFIG_PACKAGE_luci-app-ttyd=y" >> .config
-
-# HomeProxy
-echo "CONFIG_PACKAGE_luci-app-homeproxy=y" >> .config
-echo "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y" >> .config
-echo "CONFIG_PACKAGE_sing-box=y" >> .config
-echo "CONFIG_PACKAGE_v2ray-geoip=y" >> .config
-echo "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
-
-# 中文
-echo "CONFIG_PACKAGE_luci-i18n-base-zh-cn=y" >> .config
-echo "CONFIG_PACKAGE_luci-i18n-firewall-zh-cn=y" >> .config
-echo "CONFIG_PACKAGE_luci-i18n-package-manager-zh-cn=y" >> .config
-echo "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y" >> .config
-
-# USB 蓝牙支持
-echo "CONFIG_PACKAGE_kmod-usb-core=y" >> .config
-echo "CONFIG_PACKAGE_kmod-usb2=y" >> .config
-echo "CONFIG_PACKAGE_kmod-bluetooth=y" >> .config
-echo "CONFIG_PACKAGE_kmod-btusb=y" >> .config
-
-# WiFi
-echo "CONFIG_PACKAGE_kmod-mt76=y" >> .config
-echo "CONFIG_PACKAGE_wpad-basic-mbedtls=y" >> .config
+# ===== 更新配置 =====
+make defconfig
