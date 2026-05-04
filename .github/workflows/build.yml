@@ -20,9 +20,9 @@ jobs:
             libssl-dev python3-distutils rsync unzip zlib1g-dev \
             file wget curl
 
-      - name: Clone ImmortalWrt Source
+      - name: Clone ImmortalWrt Stable Source
         run: |
-          git clone --depth=1 https://github.com/immortalwrt/immortalwrt.git openwrt
+          git clone --depth=1 -b openwrt-24.10 https://github.com/immortalwrt/immortalwrt.git openwrt
           cp feeds.conf.default openwrt/feeds.conf.default
 
       - name: Run DIY Script
@@ -50,5 +50,5 @@ jobs:
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
-          name: R6220-ImmortalWrt
+          name: R6220-ImmortalWrt-24.10
           path: openwrt/bin/targets/
