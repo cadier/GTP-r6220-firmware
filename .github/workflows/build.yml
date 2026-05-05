@@ -77,7 +77,7 @@ jobs:
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
-          name: R6220-ImmortalWrt-24.10
+          name: R6220-ImmortalWrt-23.05.6
           path: |
             openwrt/bin/targets/
             openwrt/bin/packages/
