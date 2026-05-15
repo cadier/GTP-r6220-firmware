@@ -51,9 +51,8 @@ jobs:
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          # 强制更新 luci feed
-          ./scripts/feeds update luci
-          ./scripts/feeds install -a -p luci
+          # 强制更新关键 feeds
+          ./scripts/feeds update luci routing
 
       - name: Run DIY Script
         run: |
