@@ -39,7 +39,11 @@ jobs:
 
       - name: Clone ImmortalWrt Source
         run: |
-          git clone --depth=1 -b openwrt-23.05 https://github.com/immortalwrt/immortalwrt.git openwrt
+          git clone --depth=1 -b v23.05.6 https://github.com/immortalwrt/immortalwrt.git openwrt
+
+      - name: Copy Custom Feeds
+        run: |
+          cp feeds.conf.default openwrt/feeds.conf.default
 
       - name: Update Feeds
         run: |
@@ -49,9 +53,11 @@ jobs:
 
       - name: Run DIY Script
         run: |
-          chmod +x diy-part.sh
+          # 复制 diy-part.sh 到 openwrt 目录
+          cp diy-part.sh openwrt/
           cd openwrt
-          ../diy-part.sh
+          chmod +x diy-part.sh
+          ./diy-part.sh
 
       - name: Load Custom Config
         run: |
