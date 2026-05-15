@@ -40,7 +40,7 @@ jobs:
 
       - name: Clone ImmortalWrt Source
         run: |
-          git clone --depth=1 -b v23.05.6 https://github.com/immortalwrt/immortalwrt.git openwrt
+          git clone --depth=1 -b openwrt-23.05 https://github.com/immortalwrt/immortalwrt.git openwrt
 
       - name: Copy Custom Feeds
         run: |
