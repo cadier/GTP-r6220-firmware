@@ -1,46 +1,22 @@
 #!/bin/bash
 # =========================================================
-# ImmortalWrt R6220 DIY Script（修正版）
-# 功能：
-# - 更新 feeds
-# - 安装软件包
-# - 默认开启 WiFi
-# - 默认中文
-# - 修复 luci SSL 冲突（OpenSSL → mbedTLS）
+# ImmortalWrt R6220 DIY Script (2026 优化版)
 # =========================================================
 
-# 更新并安装 feeds
-./scripts/feeds update -a
-./scripts/feeds install -a
+# 1. 强制修改版本显示（解决 SNAPSHOT 问题）
+# 修改源码里的版本定义
+sed -i "s/ENABLED_BACKEND_SNAPSHOTS=y/ENABLED_BACKEND_SNAPSHOTS=n/g" include/version.mk
+sed -i 's/SNAPSHOT/23.05.6/g' include/version.mk
+# 确保版本代号一致
+sed -i 's/v$(VERSION_NUMBER)/v23.05.6/g' include/version.mk
 
-# ===== 默认开启 WiFi (开源驱动通用) =====
+# 2. 默认开启 WiFi
 sed -i "s/option disabled '1'/option disabled '0'/g" \
 package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc
 
-# ===== 默认中文语言 =====
-mkdir -p package/base-files/files/etc/uci-defaults
+# 3. 默认中文语言设置
+# 这种方式比 uci-defaults 更直接，直接修改源码默认值
+sed -i 's/auto/zh_cn/g' feeds/luci/modules/luci-base/root/etc/config/luci
 
-cat > package/base-files/files/etc/uci-defaults/99-default-lang << 'EOF'
-#!/bin/sh
-uci set luci.main.lang='zh_cn'
-uci commit luci
-exit 0
-EOF
-
-chmod +x package/base-files/files/etc/uci-defaults/99-default-lang
-
-# ===== 修复 SSL 包冲突 =====
-sed -i '/CONFIG_PACKAGE_luci-ssl=/d' .config
-sed -i '/CONFIG_PACKAGE_luci-ssl-mbedtls=/d' .config
-sed -i '/CONFIG_PACKAGE_libustream-openssl20201210/d' .config
-sed -i '/CONFIG_PACKAGE_libustream-mbedtls20201210/d' .config
-
-cat >> .config << EOF
-CONFIG_PACKAGE_luci-ssl-mbedtls=y
-# CONFIG_PACKAGE_luci-ssl is not set
-# CONFIG_PACKAGE_libustream-openssl20201210 is not set
-CONFIG_PACKAGE_libustream-mbedtls20201210=y
-EOF
-
-# ===== 更新配置 =====
-make defconfig
+# 注意：不要在脚本里操作 .config，因为 Workflow 下一步会覆盖它。
+# 所有的配置请全部写在你仓库根目录的 .config 文件里。
